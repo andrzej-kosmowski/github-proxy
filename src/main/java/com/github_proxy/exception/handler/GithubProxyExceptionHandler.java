@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class GithubProxyExceptionHandler {
     @ExceptionHandler(GithubProxyException.class)
     public ResponseEntity<ErrorMessageDto> handleGithubProxyException(GithubProxyException exception) {
+        log.error("Business exception: status={}, message={}", exception.getStatus(), exception.getMessage());
         HttpStatus status = exception.getStatus();
         ErrorMessageDto error = new ErrorMessageDto(LocalDateTime.now(), status.value(), status.getReasonPhrase(),
                 exception.getMessage());
@@ -26,6 +27,7 @@ public class GithubProxyExceptionHandler {
     public ResponseEntity<ErrorMessageDto> handleUnexpectedException(
             Exception exception
     ) {
+        log.error("Unexpected exception occurred: {}", exception.getMessage(), exception);
         ErrorMessageDto error = new ErrorMessageDto(
                 LocalDateTime.now(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
@@ -39,6 +41,7 @@ public class GithubProxyExceptionHandler {
 
     @ExceptionHandler(FeignException.NotFound.class)
     public ResponseEntity<ErrorMessageDto> handleNotFoundException(FeignException.NotFound exception) {
+        log.error("Github repository not found");
         HttpStatus status = HttpStatus.NOT_FOUND;
         ErrorMessageDto error = new ErrorMessageDto(
                 LocalDateTime.now(),
