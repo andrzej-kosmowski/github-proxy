@@ -4,18 +4,35 @@ import com.github_proxy.client.GitHubClient;
 import com.github_proxy.dto.GitHubRepository;
 import com.github_proxy.dto.RepositoryDto;
 import com.github_proxy.mapper.RepositoryMapper;
+import com.github_proxy.model.Repository;
+import com.github_proxy.repository.RepoRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 @Service
 @RequiredArgsConstructor
 public class RepositoryService {
     private final GitHubClient gitHubClient;
     private final RepositoryMapper repositoryMapper;
+    private final RepoRepository repoRepository;
 
-    public RepositoryDto getRepository(@PathVariable("owner") String owner, @PathVariable("repo") String repo) {
+    public RepositoryDto getRepository(String owner, String repo) {
         GitHubRepository repository = gitHubClient.getRepository(owner, repo);
         return repositoryMapper.toDto(repository);
+    }
+
+    @Transactional
+    public RepositoryDto saveRepository(String owner, String repo) {
+        GitHubRepository repository = gitHubClient.getRepository(owner, repo);
+        Repository entity  = repositoryMapper.toEntity(repository);
+        Repository saved = repoRepository.save(entity);
+        return repositoryMapper.toDto(saved);
+    }
+
+    public RepositoryDto getLocalRepository(String owner, String repo) {
+        String fullName = owner + "/" + repo;
+        Repository entity = repoRepository.findByFullName(fullName).orElseThrow();
+        return repositoryMapper.toDto(entity);
     }
 }
