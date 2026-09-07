@@ -1,5 +1,6 @@
 package com.github_proxy.model;
 
+import com.github_proxy.dto.UpdateRepositoryCommand;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -27,5 +28,12 @@ public class Repository {
         this.cloneUrl = cloneUrl;
         this.stars = stars;
         this.createdAt = createdAt;
+    }
+
+    public void update(UpdateRepositoryCommand command) {
+        this.fullName = command.fullName();
+        this.description = command.description();
+        this.cloneUrl = command.cloneUrl();
+        this.stars = command.stars();
     }
 }

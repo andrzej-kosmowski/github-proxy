@@ -1,6 +1,7 @@
 package com.github_proxy.controller;
 
 import com.github_proxy.dto.RepositoryDto;
+import com.github_proxy.dto.UpdateRepositoryCommand;
 import com.github_proxy.service.RepositoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,5 +26,11 @@ public class RepositoryController {
     @ResponseStatus(HttpStatus.CREATED)
     public RepositoryDto saveRepository(@PathVariable String owner, @PathVariable String repositoryName) {
         return repositoryService.saveRepository(owner, repositoryName);
+    }
+
+    @PutMapping("/repositories/{owner}/{repositoryName}")
+    public RepositoryDto updateRepository(@PathVariable String owner, @PathVariable String repositoryName,
+                                          @RequestBody UpdateRepositoryCommand command) {
+        return repositoryService.updateLocalRepository(owner, repositoryName, command);
     }
 }
