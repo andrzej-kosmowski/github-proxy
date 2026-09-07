@@ -33,4 +33,10 @@ public class RepositoryController {
                                           @RequestBody UpdateRepositoryCommand command) {
         return repositoryService.updateLocalRepository(owner, repositoryName, command);
     }
+
+    @DeleteMapping("/repositories/{owner}/{repositoryName}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteRepository(@PathVariable String owner, @PathVariable String repositoryName) {
+        repositoryService.deleteLocalRepository(owner, repositoryName);
+    }
 }

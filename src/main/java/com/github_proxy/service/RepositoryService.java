@@ -44,4 +44,11 @@ public class RepositoryService {
         localRepo.update(command);
         return repositoryMapper.toDto(localRepo);
     }
+
+    @Transactional
+    public void deleteLocalRepository(String owner, String repo) {
+        String fullName = owner + "/" + repo;
+        Repository localRepo = repoRepository.findByFullName(fullName).orElseThrow();
+        repoRepository.delete(localRepo);
+    }
 }
