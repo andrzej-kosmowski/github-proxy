@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface RepoRepository extends JpaRepository<Repository, Long> {
     Optional<Repository> findByFullName(String fullName);
+    boolean existsByFullName(String fullName);
 }

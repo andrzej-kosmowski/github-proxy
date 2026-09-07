@@ -1,6 +1,7 @@
 package com.github_proxy.model;
 
 import com.github_proxy.dto.UpdateRepositoryCommand;
+import com.github_proxy.exception.InvalidRepositoryDataException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -35,5 +36,21 @@ public class Repository {
         this.description = command.description();
         this.cloneUrl = command.cloneUrl();
         this.stars = command.stars();
+        this.validate();
+    }
+
+    private void validate() {
+        if (fullName == null || fullName.isBlank()) {
+            throw new InvalidRepositoryDataException("Repository full name cannot be empty");
+        }
+        if (description == null || description.isBlank()) {
+            throw new InvalidRepositoryDataException("Repository description cannot be empty");
+        }
+        if (cloneUrl == null || cloneUrl.isBlank()) {
+            throw new InvalidRepositoryDataException("Repository clone URL cannot be empty");
+        }
+        if (stars < 0) {
+            throw new InvalidRepositoryDataException("Stars cannot be negative");
+        }
     }
 }

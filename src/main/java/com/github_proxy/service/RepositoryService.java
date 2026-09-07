@@ -4,6 +4,8 @@ import com.github_proxy.client.GitHubClient;
 import com.github_proxy.dto.GitHubRepository;
 import com.github_proxy.dto.RepositoryDto;
 import com.github_proxy.dto.UpdateRepositoryCommand;
+import com.github_proxy.exception.LocalRepositoryAlreadyExistsException;
+import com.github_proxy.exception.LocalRepositoryNotFoundException;
 import com.github_proxy.mapper.RepositoryMapper;
 import com.github_proxy.model.Repository;
 import com.github_proxy.repository.RepoRepository;
@@ -25,6 +27,10 @@ public class RepositoryService {
 
     @Transactional
     public RepositoryDto saveRepository(String owner, String repo) {
+        String fullName = owner + "/" + repo;
+        if (repoRepository.existsByFullName(fullName)) {
+            throw new LocalRepositoryAlreadyExistsException(fullName);
+        }
         GitHubRepository repository = gitHubClient.getRepository(owner, repo);
         Repository entity  = repositoryMapper.toEntity(repository);
         Repository saved = repoRepository.save(entity);
@@ -32,23 +38,26 @@ public class RepositoryService {
     }
 
     public RepositoryDto getLocalRepository(String owner, String repo) {
-        String fullName = owner + "/" + repo;
-        Repository entity = repoRepository.findByFullName(fullName).orElseThrow();
+        Repository entity = findRepositoryOrThrow(owner, repo);
         return repositoryMapper.toDto(entity);
     }
 
     @Transactional
     public RepositoryDto updateLocalRepository(String owner, String repo, UpdateRepositoryCommand command) {
-        String fullName = owner + "/" + repo;
-        Repository localRepo = repoRepository.findByFullName(fullName).orElseThrow();
+        Repository localRepo = findRepositoryOrThrow(owner, repo);
         localRepo.update(command);
         return repositoryMapper.toDto(localRepo);
     }
 
     @Transactional
     public void deleteLocalRepository(String owner, String repo) {
-        String fullName = owner + "/" + repo;
-        Repository localRepo = repoRepository.findByFullName(fullName).orElseThrow();
+        Repository localRepo = findRepositoryOrThrow(owner, repo);
         repoRepository.delete(localRepo);
+    }
+
+    private Repository findRepositoryOrThrow(String owner, String repo) {
+        String fullName = owner + "/" + repo;
+        return repoRepository.findByFullName(fullName).orElseThrow(
+                () -> new LocalRepositoryNotFoundException(fullName));
     }
 }
