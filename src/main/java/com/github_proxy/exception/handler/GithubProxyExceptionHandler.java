@@ -2,7 +2,6 @@ package com.github_proxy.exception.handler;
 
 import com.github_proxy.dto.ErrorMessageDto;
 import com.github_proxy.exception.GithubProxyException;
-import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,18 +36,5 @@ public class GithubProxyExceptionHandler {
         return ResponseEntity
                 .internalServerError()
                 .body(error);
-    }
-
-    @ExceptionHandler(FeignException.NotFound.class)
-    public ResponseEntity<ErrorMessageDto> handleNotFoundException(FeignException.NotFound exception) {
-        log.error("Github repository not found");
-        HttpStatus status = HttpStatus.NOT_FOUND;
-        ErrorMessageDto error = new ErrorMessageDto(
-                LocalDateTime.now(),
-                status.value(),
-                status.getReasonPhrase(),
-                "Github repository not found"
-        );
-        return ResponseEntity.status(status).body(error);
     }
 }
