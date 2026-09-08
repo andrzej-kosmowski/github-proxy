@@ -31,7 +31,7 @@ public class RepositoryService {
 
     @Transactional
     public RepositoryDto saveRepository(String owner, String repo) {
-        String fullName = owner + "/" + repo;
+        String fullName = buildFullName(owner, repo);
         log.info("Saving repository to local database: {}", fullName);
         if (repoRepository.existsByFullName(fullName)) {
             throw new LocalRepositoryAlreadyExistsException(fullName);
@@ -68,10 +68,14 @@ public class RepositoryService {
     }
 
     private Repository findRepositoryOrThrow(String owner, String repo) {
-        String fullName = owner + "/" + repo;
+        String fullName = buildFullName(owner, repo);
         return repoRepository.findByFullName(fullName).orElseThrow(() -> {
             log.warn("Repository not found in local database: {}", fullName);
             return new LocalRepositoryNotFoundException(fullName);
         });
+    }
+
+    private String buildFullName(String owner, String repo) {
+        return owner + "/" + repo;
     }
 }
