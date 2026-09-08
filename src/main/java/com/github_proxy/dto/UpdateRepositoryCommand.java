@@ -4,6 +4,6 @@ public record UpdateRepositoryCommand(
         String fullName,
         String description,
         String cloneUrl,
-        int stars
+        Integer stars
 ) {
 }

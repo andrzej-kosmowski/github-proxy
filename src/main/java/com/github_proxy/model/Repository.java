@@ -20,7 +20,7 @@ public class Repository {
     private String fullName;
     private String description;
     private String cloneUrl;
-    private int stars;
+    private Integer stars;
     private LocalDateTime createdAt;
 
     public Repository(String fullName, String description, String cloneUrl, int stars, LocalDateTime createdAt) {

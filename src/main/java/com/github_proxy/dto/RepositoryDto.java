@@ -6,7 +6,7 @@ public record RepositoryDto(
         String fullName,
         String description,
         String cloneUrl,
-        int stars,
+        Integer stars,
         LocalDateTime createdAt
 ) {
 }

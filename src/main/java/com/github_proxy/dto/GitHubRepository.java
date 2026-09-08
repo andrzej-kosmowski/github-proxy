@@ -11,7 +11,7 @@ public record GitHubRepository(
         @JsonProperty("clone_url")
         String cloneUrl,
         @JsonProperty("stargazers_count")
-        int stars,
+        Integer stars,
         @JsonProperty("created_at")
         LocalDateTime createdAt
 ) {
