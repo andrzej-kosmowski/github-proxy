@@ -2,6 +2,7 @@ package com.github_proxy.errorDecoder;
 
 import com.github_proxy.exception.RepositoryNotFoundException;
 import feign.Response;
+import feign.RetryableException;
 import feign.codec.ErrorDecoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,13 @@ public class GitHubErrorDecoder implements ErrorDecoder {
         log.error("API call failed: method={}, status={}, url={}", methodKey, status, url);
         return switch (status) {
             case 404 -> new RepositoryNotFoundException(extractRepoName(url));
+            case 503 -> new RetryableException(
+                    response.status(),
+                    "API is temporarily unavailable",
+                    response.request().httpMethod(),
+                    (Long) null,
+                    response.request()
+            );
             default -> defaultDecoder.decode(methodKey, response);
         };
     }
