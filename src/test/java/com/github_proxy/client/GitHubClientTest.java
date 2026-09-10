@@ -2,8 +2,8 @@ package com.github_proxy.client;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github_proxy.dto.GitHubRepository;
+import com.github_proxy.exception.GitHubServiceUnavailableException;
 import com.github_proxy.exception.RepositoryNotFoundException;
-import feign.RetryableException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -89,12 +89,13 @@ public class GitHubClientTest {
     }
 
     @Test
-    void getRepository_GitHubReturns503FiveTimes_ThrowsException() {
+    void getRepository_GitHubReturns503_UsesFallbackFactory() {
         // given
         wireMockServer.stubFor(get("/repos/microsoft/vscode")
                 .willReturn(aResponse().withStatus(503)));
         // when & then
-        assertThrows(RetryableException.class, () -> gitHubClient.getRepository("microsoft", "vscode"));
-        wireMockServer.verify(5, getRequestedFor(urlEqualTo("/repos/microsoft/vscode")));
+        assertThrows(GitHubServiceUnavailableException.class,
+                () -> gitHubClient.getRepository("microsoft", "vscode"));
+        wireMockServer.verify(4, getRequestedFor(urlEqualTo("/repos/microsoft/vscode")));
     }
 }

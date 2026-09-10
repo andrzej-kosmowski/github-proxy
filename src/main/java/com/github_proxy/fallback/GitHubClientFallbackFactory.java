@@ -1,7 +1,6 @@
 package com.github_proxy.fallback;
 
 import com.github_proxy.client.GitHubClient;
-import com.github_proxy.dto.GitHubRepository;
 import com.github_proxy.exception.GitHubServiceUnavailableException;
 import com.github_proxy.exception.GithubProxyException;
 import lombok.extern.slf4j.Slf4j;
