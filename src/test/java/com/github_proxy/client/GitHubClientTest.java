@@ -29,15 +29,10 @@ public class GitHubClientTest {
     void getRepository_GitHubReturns200_ReturnsRepository() {
         // given
         wireMockServer.stubFor(get("/repos/microsoft/vscode")
-                .willReturn(okJson("""
-                    {
-                      "full_name": "microsoft/vscode",
-                      "description": "Code editor",
-                      "clone_url": "https://github.com/microsoft/vscode.git",
-                      "stargazers_count": 200,
-                      "created_at": "2020-01-01T12:00:00"
-                    }
-                    """)));
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("response.json")));
         // when
         GitHubRepository result = gitHubClient.getRepository("microsoft", "vscode");
         // then
@@ -77,15 +72,10 @@ public class GitHubClientTest {
         wireMockServer.stubFor(get("/repos/microsoft/vscode")
                 .inScenario("retry")
                 .whenScenarioStateIs("third")
-                .willReturn(okJson("""
-                        {
-                          "full_name": "microsoft/vscode",
-                          "description": "Code editor",
-                          "clone_url": "https://github.com/microsoft/vscode.git",
-                          "stargazers_count": 200,
-                          "created_at": "2020-01-01T12:00:00"
-                        }
-                        """)));
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBodyFile("response.json")));
         // when
         GitHubRepository result = gitHubClient.getRepository("microsoft", "vscode");
         // then
