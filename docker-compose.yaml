@@ -1,5 +1,39 @@
 version: '3'
 services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - elk-network
+
+  logstash:
+    build:
+      context: ./logstash
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - elk-network
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.16.2
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - elk-network
+    depends_on:
+      - elasticsearch
+
   gh-proxy:
     container_name: gh-proxy
     build:
@@ -7,10 +41,14 @@ services:
     image: gh-proxy
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/githubproxy
+      - LOGSTASH_HOST=logstash
     ports:
-      - "8081:8080"
+      - "8080:8080"
+    networks:
+      - elk-network
     depends_on:
       - db
+      - logstash
 
   db:
     image: postgres
@@ -23,6 +61,8 @@ services:
       - "5432:5432"
     volumes:
       - local_pgdata:/var/lib/postgresql
+    networks:
+      - elk-network
 
   pgadmin:
     image: dpage/pgadmin4
@@ -36,7 +76,14 @@ services:
       - db
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - elk-network
 
 volumes:
+  es_data:
   local_pgdata:
   pgadmin-data:
+
+networks:
+  elk-network:
+    driver: bridge
