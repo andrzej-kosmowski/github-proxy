@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-repositories-table
+      author: Andrzej
+      changes:
+        - createTable:
+            tableName: repositories
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: full_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+              - column:
+                  name: clone_url
+                  type: VARCHAR(255)
+              - column:
+                  name: stars
+                  type: INT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
