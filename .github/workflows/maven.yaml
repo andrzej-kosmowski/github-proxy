@@ -9,11 +9,11 @@ on:
 
 jobs:
   build-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -21,7 +21,7 @@ jobs:
       - name: Build and test
         run: mvn -B verify
       - name: Upload jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: app-jar
           path: target/github-proxy-0.0.1-SNAPSHOT.jar
@@ -29,12 +29,12 @@ jobs:
   sonar:
     name: SonarQube Cloud
     needs: build-test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"
@@ -51,11 +51,11 @@ jobs:
   dependency-scan:
     name: Repository security scan
     needs: build-test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Trivy repository scan
         uses: aquasecurity/trivy-action@v0.36.0
@@ -65,12 +65,13 @@ jobs:
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          format: table
-          exit-code: "0"
+          format: json
+          output: trivy-repository-report.json
+          exit-code: "1"
 
       - name: Upload repository report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: repository-security-report
           path: trivy-repository-report.json
@@ -80,7 +81,7 @@ jobs:
   docker:
     name: Docker security and publishing
     needs: [build-test, sonar, dependency-scan]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     permissions:
       contents: read
@@ -89,10 +90,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Download application JAR
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: app-jar
           path: target/
@@ -131,7 +132,7 @@ jobs:
 
       - name: Upload image reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: image-reports
           path: |
@@ -141,7 +142,7 @@ jobs:
           retention-days: 14
 
       - name: Login to GHCR
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage')
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -149,17 +150,17 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push Docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage')
         run: |
           docker push "$IMAGE_NAME:$GITHUB_SHA"
           docker push "$IMAGE_NAME:latest"
 
       - name: Install Cosign
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage')
         uses: sigstore/cosign-installer@v3
 
       - name: Sign Docker image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stage')
         run: |
           IMAGE_REF=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_NAME:$GITHUB_SHA")
           cosign sign --yes "$IMAGE_REF"
@@ -167,12 +168,11 @@ jobs:
   publish-artifact:
     name: Artifact repository demo
     needs: [build-test, sonar, dependency-scan, docker]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Download application JAR
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: app-jar
           path: artifacts/
@@ -184,7 +184,7 @@ jobs:
           echo "Upload finished (simulated)"
 
       - name: Upload demo artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: central-repository-demo
           path: artifacts/github-proxy-0.0.1-SNAPSHOT.jar
