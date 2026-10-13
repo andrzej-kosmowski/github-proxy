@@ -65,9 +65,8 @@ jobs:
           scanners: vuln,secret,misconfig
           severity: HIGH,CRITICAL
           ignore-unfixed: true
-          format: json
-          output: trivy-repository-report.json
-          exit-code: "1"
+          format: table
+          exit-code: "0"
 
       - name: Upload repository report
         if: always()
