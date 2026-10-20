@@ -24,7 +24,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: app-jar
-          path: target/github-proxy-0.0.1-SNAPSHOT.jar
+          path: bootstrap/target/github-proxy-0.0.1-SNAPSHOT.jar
 
   sonar:
     name: SonarQube Cloud
@@ -96,7 +96,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: app-jar
-          path: target/
+          path: /bootstrap/target/
 
       - name: Set image name
         run: |
